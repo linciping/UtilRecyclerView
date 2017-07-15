@@ -1,4 +1,4 @@
-package com.linciping.library;
+package com.linciping.utilrecyclerviewdemo;
 
 import org.junit.Test;
 

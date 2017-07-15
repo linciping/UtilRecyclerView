@@ -1,39 +1,40 @@
-package com.linciping.library;
+package com.linciping.utilrecyclerview;
 
 import android.content.Context;
 import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
-import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.orhanobut.logger.Logger;
-
 /**
- * Created by linciping on 2017/1/4.
+ * @author linciping
+ * @time 2017/7/8
+ * @Description 支持下拉加载的RecyclerView
  */
-
-public class LoadRecyclerView extends DividerRecyclerView {
+public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
 
     private OnLoadListener mLoadListener;
     private boolean isLoad = false;
-    private LoadAdapter mAdapter;
+    private LoaderAdapter mAdapter;
 
-    public LoadRecyclerView(Context context) {
+    private static final String TAG = "LoaderRecyclerView";
+
+    public LoaderRecyclerView(Context context) {
         super(context);
     }
 
-    public LoadRecyclerView(Context context, @Nullable AttributeSet attrs) {
+    public LoaderRecyclerView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public LoadRecyclerView(Context context, @Nullable AttributeSet attrs, int defStyle) {
+    public LoaderRecyclerView(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
     }
 
@@ -43,7 +44,7 @@ public class LoadRecyclerView extends DividerRecyclerView {
      * @param adapter
      * @param <T>
      */
-    public <T extends LoadAdapter> void setAdapter(T adapter) {
+    public <T extends LoaderAdapter> void setAdapter(T adapter) {
         super.setAdapter(adapter);
         this.mAdapter = adapter;
     }
@@ -67,7 +68,7 @@ public class LoadRecyclerView extends DividerRecyclerView {
             if (mAdapter != null) {
                 mAdapter.notifyRemoveLoadMore();
             } else {
-                Logger.e("适配器暂未设置");
+                Log.e(TAG, "适配器暂未设置");
             }
         }
         this.isLoad = false;
@@ -83,7 +84,7 @@ public class LoadRecyclerView extends DividerRecyclerView {
         if (mAdapter != null) {
             mAdapter.setLoadView(loadView);
         } else {
-            Logger.e("适配器未设置");
+            Log.e(TAG, "适配器暂未设置");
         }
     }
 
@@ -118,13 +119,9 @@ public class LoadRecyclerView extends DividerRecyclerView {
                         mLoadListener.onLoad();
                     }
                 }
-            } else if (getLayoutManager() instanceof GridLayoutManager) {
-                GridLayoutManager gridLayoutManager = (GridLayoutManager) getLayoutManager();
-                gridLayoutManager.findLastVisibleItemPosition();
             }
-
         } else {
-            Logger.e("适配器暂未设置");
+            Log.e(TAG, "适配器暂未设置");
         }
         return super.dispatchTouchEvent(ev);
     }
@@ -135,7 +132,6 @@ public class LoadRecyclerView extends DividerRecyclerView {
     private boolean canLoad(LinearLayoutManager layoutManager) {
         int startPosition = layoutManager.findFirstVisibleItemPosition();
         int endPosition = layoutManager.findLastVisibleItemPosition();
-//        Logger.e("当前视图显示的Item:" + String.valueOf(endPosition - startPosition));
         if (endPosition - startPosition < layoutManager.getItemCount() - 1) {
             return true;
         } else {
@@ -153,57 +149,36 @@ public class LoadRecyclerView extends DividerRecyclerView {
         void onLoad();
     }
 
-    /**
-     * 加载适配器
-     *
-     * @param <VH>
-     */
-    public static abstract class LoadAdapter<VH extends RecyclerView.ViewHolder>
-            extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+    static abstract class LoaderAdapter<VH> extends HeaderAndFooterRecyclerView.RecyclerWrapAdapter {
+
+        static final int LOAD_VIEW = 10004;
 
         protected boolean mCanLoad = false;
-        private static final int NORMAL_HOLDER = 1001;
-        private static final int LOAD_HOLDER = 1002;
         private View mLoadView;//加载视图
-        private long mLoadTime = 500;
+        private long mLoadTime = 2000;
         private long mStartLoadTime;
 
-        /**
-         * 内容视图创建ViewHolder
-         *
-         * @param parent
-         * @param viewType
-         * @return
-         */
-        public abstract VH myCreateViewHolder(ViewGroup parent, int viewType);
-
-        /**
-         * 绑定数据到内容ViewHolder
-         *
-         * @param holder
-         * @param position
-         */
-        public abstract void myBindViewHolder(VH holder, int position);
-
         @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            if (viewType == NORMAL_HOLDER) {
-                return myCreateViewHolder(parent, viewType);
-            } else {
-                if (mLoadView != null) {
-                    return new LoadViewHolder(mLoadView);
-                } else {
-                    View loadView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_load, parent, false);
-                    return new LoadViewHolder(loadView);
-                }
+        public int getItemViewType(int position) {
+            if (position == getItemCount() - 1) {
+                return LOAD_VIEW;
             }
+            return super.getItemViewType(position);
         }
 
         @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            if (getItemViewType(position) == NORMAL_HOLDER) {
-                myBindViewHolder((VH) holder, position);
+        public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            if (viewType == LOAD_VIEW) {
+                if (mLoadView != null) {
+                    return new LoadViewHolder(mLoadView);
+                } else {
+                    View loadView = LayoutInflater.from(parent.getContext()).
+                            inflate(com.linciping.utilrecyclerview.R.layout.item_load, parent, false);
+                    return new LoadViewHolder(loadView);
+                }
             }
+            return super.onCreateViewHolder(parent, viewType);
         }
 
         /**
@@ -228,8 +203,7 @@ public class LoadRecyclerView extends DividerRecyclerView {
             需要优化的地方
             1：根据加载的时间，优化加载布局的显示
              */
-            long newTime = System.currentTimeMillis();//根据时间，设置加载视图的默认显示时间
-//            Logger.e("完成加载的时间:" + String.valueOf(newTime));
+            long newTime = System.currentTimeMillis();
             if (newTime - mStartLoadTime < mLoadTime) {
                 long loadTime = newTime - mStartLoadTime;
                 loadHandler.sendEmptyMessageDelayed(0, mLoadTime - loadTime);
@@ -245,7 +219,6 @@ public class LoadRecyclerView extends DividerRecyclerView {
                 removeLoadMore();
             }
         };
-
 
         /**
          * 停止加载的方法
@@ -271,15 +244,6 @@ public class LoadRecyclerView extends DividerRecyclerView {
          */
         private View getLoadView() {
             return mLoadView;
-        }
-
-        @Override
-        public int getItemViewType(int position) {
-            if (mCanLoad && position == (getItemCount() - 1)) {
-                return LOAD_HOLDER;
-            } else {
-                return NORMAL_HOLDER;
-            }
         }
     }
 

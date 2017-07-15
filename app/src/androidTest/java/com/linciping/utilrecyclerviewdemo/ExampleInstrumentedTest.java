@@ -1,4 +1,4 @@
-package com.linciping.utilrecyclerview;
+package com.linciping.utilrecyclerviewdemo;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;

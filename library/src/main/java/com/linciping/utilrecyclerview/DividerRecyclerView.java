@@ -1,4 +1,4 @@
-package com.linciping.library;
+package com.linciping.utilrecyclerview;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -15,9 +15,10 @@ import android.view.View;
 
 
 /**
- * Created by linciping on 2017/1/5.
+ * @author linciping
+ * @time 2017/5/17
+ * @Description 带分割线的RecyclerView
  */
-
 public class DividerRecyclerView extends RecyclerView {
 
     private int mDividerHeight;
@@ -34,9 +35,9 @@ public class DividerRecyclerView extends RecyclerView {
 
     public DividerRecyclerView(Context context, @Nullable AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
-        TypedArray array = context.getTheme().obtainStyledAttributes(attrs, R.styleable.DividerRecyclerView, defStyle, 0);
-        mDividerHeight = array.getDimensionPixelSize(R.styleable.DividerRecyclerView_dividerHeight, 3);
-        mDividerColor = array.getColor(R.styleable.DividerRecyclerView_dividerColor, Color.parseColor("#eeeeee"));
+        TypedArray array = context.getTheme().obtainStyledAttributes(attrs, com.linciping.utilrecyclerview.R.styleable.DividerRecyclerView, defStyle, 0);
+        mDividerHeight = array.getDimensionPixelSize(com.linciping.utilrecyclerview.R.styleable.DividerRecyclerView_dividerHeight, 3);
+        mDividerColor = array.getColor(com.linciping.utilrecyclerview.R.styleable.DividerRecyclerView_dividerColor, Color.parseColor("#eeeeee"));
         if (mDividerColor != 0) {
             addItemDecoration(new DividerItemDecoration());
         }
