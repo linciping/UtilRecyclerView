@@ -49,23 +49,23 @@ public class DividerRecyclerView extends RecyclerView {
         super.setAdapter(adapter);
     }
 
-    class DividerItemDecoration extends ItemDecoration {
+    private class DividerItemDecoration extends ItemDecoration {
 
         @Override
         public void getItemOffsets(Rect outRect, View view, RecyclerView parent, RecyclerView.State state) {
             super.getItemOffsets(outRect, view, parent, state);
             LayoutManager layoutManager = parent.getLayoutManager();
             if (layoutManager != null) {
-                if (layoutManager instanceof LinearLayoutManager) {
+                if (layoutManager instanceof GridLayoutManager) {
+                    outRect.bottom = mDividerHeight;
+                    outRect.right = mDividerHeight;
+                } else if (layoutManager instanceof LinearLayoutManager) {
                     LinearLayoutManager linearLayoutManager = (LinearLayoutManager) layoutManager;
                     if (linearLayoutManager.getOrientation() == LinearLayoutManager.HORIZONTAL) {
                         outRect.bottom = mDividerHeight;
                     } else if (((LinearLayoutManager) layoutManager).getOrientation() == LinearLayoutManager.VERTICAL) {
                         outRect.right = mDividerHeight;
                     }
-                } else if (layoutManager instanceof GridLayoutManager) {
-                    outRect.bottom = mDividerHeight;
-                    outRect.right = mDividerHeight;
                 }
             } else {
                 outRect.bottom = mDividerHeight;

@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.linciping.utilrecyclerview.LoadRecyclerView;
+import com.linciping.utilrecyclerview.LoaderRecyclerView;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ import java.util.List;
  * Created by linciping on 2017/5/17.
  */
 
-public class StringAdapter extends LoadRecyclerView.LoadAdapter<StringAdapter.StringViewHolder> {
+public class StringAdapter extends LoaderRecyclerView.LoaderAdapter<StringAdapter.StringViewHolder> {
 
     private List<String> mStringList;
     private Activity mActivity;
@@ -32,17 +33,17 @@ public class StringAdapter extends LoadRecyclerView.LoadAdapter<StringAdapter.St
     }
 
     @Override
-    public void myBindViewHolder(StringViewHolder holder, int position) {
-        holder.txtContent.setText(mStringList.get(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        if (mCanLoad) {
+    public int getAdapterItemCount() {
+        if (isLoad) {
             return mStringList.size() + 1;
         } else {
             return mStringList.size();
         }
+    }
+
+    @Override
+    public void myBindViewHolder(StringViewHolder holder, int position) {
+        holder.txtContent.setText(mStringList.get(position));
     }
 
     class StringViewHolder extends RecyclerView.ViewHolder {
