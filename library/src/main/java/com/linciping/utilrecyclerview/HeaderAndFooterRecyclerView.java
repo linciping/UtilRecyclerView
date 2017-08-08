@@ -20,7 +20,7 @@ public class HeaderAndFooterRecyclerView extends DividerRecyclerView {
 
     protected List<View> mHeaderViews, mFooterViews;
 
-    private RecyclerWrapAdapter mAdapter;
+    private HeaderAndFooterAdapter mAdapter;
 
     public HeaderAndFooterRecyclerView(Context context) {
         this(context, null);
@@ -36,7 +36,7 @@ public class HeaderAndFooterRecyclerView extends DividerRecyclerView {
         mFooterViews = new ArrayList<>();
     }
 
-    public <T extends RecyclerWrapAdapter> void setAdapter(T adapter) {
+    public <T extends HeaderAndFooterAdapter> void setAdapter(T adapter) {
         super.setAdapter(adapter);
         mAdapter = adapter;
         mAdapter.setFooterViews(mFooterViews);
@@ -179,7 +179,7 @@ public class HeaderAndFooterRecyclerView extends DividerRecyclerView {
         return 0;
     }
 
-    static abstract class RecyclerWrapAdapter<VH extends DividerRecyclerView.ViewHolder>
+    public static abstract class HeaderAndFooterAdapter<VH extends DividerRecyclerView.ViewHolder>
             extends DividerRecyclerView.Adapter<DividerRecyclerView.ViewHolder> {
 
         private static final int HEADER_VIEW = 10001;
@@ -214,7 +214,7 @@ public class HeaderAndFooterRecyclerView extends DividerRecyclerView {
 
         private void notifyFooterViewChanged(List<View> footerViews) {
             mFooterViews = footerViews;
-            mHeaderCount = mHeaderViews.size();
+            mFooterCount = mFooterViews.size();
             notifyDataSetChanged();
         }
 
@@ -258,7 +258,7 @@ public class HeaderAndFooterRecyclerView extends DividerRecyclerView {
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public final void onBindViewHolder(ViewHolder holder, int position) {
             int adjPosition = position - mHeaderCount;
             if (getItemViewType(position) == NORMAL_VIEW) {
                 myBindViewHolder((VH) holder, adjPosition);

@@ -21,7 +21,11 @@ import android.view.ViewGroup;
 public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
 
     private OnLoadListener mLoadListener;
+
     private boolean isLoad = false;
+
+    private boolean canLoad = true;
+
     private LoaderAdapter mAdapter;
 
     private static final String TAG = "LoaderRecyclerView";
@@ -56,6 +60,19 @@ public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
      */
     public void setOnLoadListener(OnLoadListener onLoadListener) {
         this.mLoadListener = onLoadListener;
+    }
+
+    /**
+     * 设置是否可以加载
+     *
+     * @param canLoad
+     */
+    public void setCanLoad(boolean canLoad) {
+        this.canLoad = canLoad;
+        if (mAdapter != null) {
+            mAdapter.setCanLoad(canLoad);
+            mAdapter.showNotify();
+        }
     }
 
     /**
@@ -113,7 +130,7 @@ public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
                 LinearLayoutManager layoutManager = (LinearLayoutManager) getLayoutManager();
                 if (canLoad(layoutManager)) {
                     int lastPosition = layoutManager.findLastVisibleItemPosition();
-                    if (lastPosition == mAdapter.getItemCount() - 1 && !isLoad && mLoadListener != null) {
+                    if (lastPosition == mAdapter.getItemCount() - 1 && !isLoad && mLoadListener != null&&canLoad) {
                         mAdapter.notifyLoadMore();
                         isLoad = true;
                         mLoadListener.onLoad();
@@ -150,19 +167,34 @@ public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
     }
 
 
-    static abstract class LoaderAdapter<VH> extends HeaderAndFooterRecyclerView.RecyclerWrapAdapter {
+    public static abstract class LoaderAdapter<VH extends ViewHolder>
+            extends HeaderAndFooterRecyclerView.HeaderAndFooterAdapter<VH> {
 
         static final int LOAD_VIEW = 10004;
+        static final int NOTIFY_VIEW = 10005;
 
-        protected boolean mCanLoad = false;
+        protected boolean isLoad = false;
+
         private View mLoadView;//加载视图
+
+        private View mNotifyView;
+
         private long mLoadTime = 2000;
+
         private long mStartLoadTime;
+
+        private boolean canLoad = true;
+
+        private void setCanLoad(boolean canLoad) {
+            this.canLoad = canLoad;
+        }
 
         @Override
         public int getItemViewType(int position) {
-            if (position == getItemCount() - 1) {
+            if (position == getItemCount() - 1 && isLoad) {
                 return LOAD_VIEW;
+            } else if (position==getItemCount()-1&&!canLoad) {
+                return NOTIFY_VIEW;
             }
             return super.getItemViewType(position);
         }
@@ -176,6 +208,14 @@ public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
                     View loadView = LayoutInflater.from(parent.getContext()).
                             inflate(com.linciping.utilrecyclerview.R.layout.item_load, parent, false);
                     return new LoadViewHolder(loadView);
+                }
+            } else if (viewType == NOTIFY_VIEW) {
+                if (mNotifyView != null) {
+                    return new NotifyViewHolder(mNotifyView);
+                } else {
+                    View notifyView = LayoutInflater.from(parent.getContext())
+                            .inflate(R.layout.item_notify, parent, false);
+                    return new NotifyViewHolder(notifyView);
                 }
             }
             return super.onCreateViewHolder(parent, viewType);
@@ -191,7 +231,7 @@ public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
              */
             mStartLoadTime = System.currentTimeMillis();
 //            Logger.e("开始加载的时间:" + String.valueOf(mStartLoadTime));
-            mCanLoad = true;
+            isLoad = true;
             notifyDataSetChanged();
         }
 
@@ -220,11 +260,17 @@ public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
             }
         };
 
+        private void showNotify() {
+            canLoad = false;
+            removeLoadMore();
+        }
+
+
         /**
          * 停止加载的方法
          */
         private void removeLoadMore() {
-            mCanLoad = false;
+            isLoad = false;
             notifyDataSetChanged();
         }
 
@@ -245,14 +291,39 @@ public class LoaderRecyclerView extends HeaderAndFooterRecyclerView {
         private View getLoadView() {
             return mLoadView;
         }
+
+        /**
+         * 设置提示视图
+         *
+         * @param notifyView
+         */
+        private void setNotifyView(View notifyView) {
+            this.mNotifyView = notifyView;
+        }
+
+        /**
+         * 获取提示视图
+         *
+         * @return
+         */
+        private View getNotifyView() {
+            return mNotifyView;
+        }
     }
 
     /**
      * 加载视图
      */
-    static class LoadViewHolder extends RecyclerView.ViewHolder {
+    private static class LoadViewHolder extends RecyclerView.ViewHolder {
 
-        public LoadViewHolder(View itemView) {
+        LoadViewHolder(View itemView) {
+            super(itemView);
+        }
+    }
+
+    private static class NotifyViewHolder extends RecyclerView.ViewHolder {
+
+        NotifyViewHolder(View itemView) {
             super(itemView);
         }
     }
