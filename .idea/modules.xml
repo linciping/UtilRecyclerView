@@ -2,7 +2,14 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<<<<<<< HEAD
       <module fileurl="file://$PROJECT_DIR$/.idea/UtilRecyclerView.iml" filepath="$PROJECT_DIR$/.idea/UtilRecyclerView.iml" />
+=======
+      <module fileurl="file://$PROJECT_DIR$/UtilRecyclerView.iml" filepath="$PROJECT_DIR$/UtilRecyclerView.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/library/library.iml" filepath="$PROJECT_DIR$/library/library.iml" />
+      <module fileurl="file://$PROJECT_DIR$/utilibrary/utilibrary.iml" filepath="$PROJECT_DIR$/utilibrary/utilibrary.iml" />
+>>>>>>> bb4caac463b76233eedac84b737dbbe911755cbb
     </modules>
   </component>
 </project>
